@@ -102,7 +102,7 @@ async def draft_from_amendment(file: UploadFile | None = File(default=None), tex
                                base_id: int | None = Form(default=None), db=Depends(get_db), user=Depends(current_user)):
     """Upload an amendment (PDF/TXT/MD) or describe a change in words; the AI proposes edits on the latest version."""
     require(file is not None or (text and text.strip()), "Upload an amendment document or describe the change.")
-    require(ai.available(), "The AI reader is not configured on this server (ANTHROPIC_API_KEY). Use 'Edit as JSON' to make the change by hand.", 503)
+    require(ai.available(), "The AI reader is not configured on this server (set GEMINI_API_KEY, GROQ_API_KEY or ANTHROPIC_API_KEY). Use the Rule builder or 'Edit as JSON' to make the change by hand.", 503)
     base = _base(db, base_id)
     pdf_bytes, doc_text, name = None, None, "chat request"
     if file is not None:

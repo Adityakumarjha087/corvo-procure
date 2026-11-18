@@ -119,3 +119,27 @@ def test_groq_sends_pdf_as_text(no_keys):
     assert seen["body"]["response_format"] == {"type": "json_object"}
     assert seen["headers"]["Authorization"] == "Bearer g"
     assert "groq.com" in seen["url"]
+
+
+def test_read_amendment_end_to_end_with_fake_groq(no_keys):
+    """The full amendment path (prompt build -> provider -> operations) must run; it once crashed building the prompt."""
+    from app.ai.policy_reader import read_amendment
+    from app.policy.service import load_default
+
+    no_keys.setenv("GROQ_API_KEY", "g")
+    reply = {"version": "5.1", "effective_from": "2026-12-01", "title": "Amendment 1", "summary": "Longer consolidation window.",
+             "operations": [{"op": "set_param", "path": "consolidation.window_hours", "value_json": "48", "rule_id": None,
+                             "rule_json": None, "before": None, "after": None, "explanation": "Clause 7"}],
+             "uncertainties": []}
+    seen = {}
+
+    def fake_post(url, headers, json, timeout):
+        seen["system"] = json["messages"][0]["content"]
+        return FakeResp(200, {"choices": [{"finish_reason": "stop", "message": {"content": __import__("json").dumps(reply)}}]})
+
+    no_keys.setattr("httpx.post", fake_post)
+    out = read_amendment(load_default(), pdf_bytes=base64.standard_b64decode(_pdf_with_text("Clause 7 window 48 hours")),
+                         source_name="a.pdf")
+    assert out["effective_from"] == "2026-12-01"
+    assert out["operations"][0]["path"] == "consolidation.window_hours" and out["operations"][0]["value"] == 48
+    assert '{"fact"' in seen["system"] and "{facts}" not in seen["system"]

@@ -80,12 +80,17 @@ Supplier modes allowed: {modes}."""
 
 
 def _system() -> str:
-    return SYSTEM.format(
-        facts="\n".join(f"- {k}: {v}" for k, v in FACTS.items()),
-        ops=", ".join(OPS),
-        params="\n".join(f"- {k}: {v[0]}" for k, v in PARAM_LABELS.items()),
-        modes=", ".join(sorted(SUPPLIER_MODES)),
-    )
+    # Plain replacement, not str.format: the prompt contains literal JSON braces.
+    values = {
+        "facts": "\n".join(f"- {k}: {v}" for k, v in FACTS.items()),
+        "ops": ", ".join(OPS),
+        "params": "\n".join(f"- {k}: {v[0]}" for k, v in PARAM_LABELS.items()),
+        "modes": ", ".join(sorted(SUPPLIER_MODES)),
+    }
+    out = SYSTEM
+    for k, v in values.items():
+        out = out.replace("{" + k + "}", v)
+    return out
 
 
 def read_amendment(current: dict, text: str | None = None, pdf_bytes: bytes | None = None, source_name: str = "") -> dict:
