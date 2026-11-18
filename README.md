@@ -49,7 +49,8 @@ cd backend && KIT_DIR=../data/kit .venv/bin/python -m pytest -q
 
 ### Hosting (Render)
 
-`render.yaml` is a blueprint: a Docker web service plus a free Postgres. Create the blueprint from the repo, set `ANTHROPIC_API_KEY`, then upload the kit once in **Data & audit**.
+- **Backend (Render):** `render.yaml` is a blueprint: a Docker web service plus a free Postgres. Create the blueprint from the repo, set `ANTHROPIC_API_KEY`, then upload the kit once in **Data & audit**. The Render URL also serves the full app on its own.
+- **Frontend (Vercel):** import the repo with **Root Directory = `frontend`**. `frontend/vercel.json` builds the Vite app and proxies `/api/*` to the Render backend, so the UI needs no API URL setting and no CORS. If the Render URL differs, change it in `vercel.json`.
 
 ---
 

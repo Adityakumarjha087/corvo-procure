@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://corvo-procure.onrender.com/api/:path*" },
+    { "source": "/docs", "destination": "https://corvo-procure.onrender.com/docs" },
+    { "source": "/openapi.json", "destination": "https://corvo-procure.onrender.com/openapi.json" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
