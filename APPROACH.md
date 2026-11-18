@@ -28,10 +28,10 @@
 ## AI tools used
 
 - **Building:** Claude Code (Anthropic's CLI agent, model Claude Opus 5.5) for analysis of the kit, code generation, tests, and the docs. I reviewed the design choices, verified the outputs against the worked examples, and can explain and change any part.
-- **Inside the app:** the Anthropic Python SDK with `claude-opus-5-5`:
+- **Inside the app:** one provider-neutral call in `backend/app/ai/client.py` that uses whichever key is configured: Claude (`claude-opus-5-5`, Anthropic SDK), Google Gemini (`gemini-2.5-flash`, REST, free AI Studio key) or Groq (`openai/gpt-oss-120b`, OpenAI-compatible REST, free key). It is used by:
   - `backend/app/ai/chat.py`: extracts PR fields from chat messages (structured output, low effort for speed)
   - `backend/app/ai/policy_reader.py`: turns an amendment document into validated edit operations (structured output, high effort, PDF input)
-  - Server-side refusal fallback is enabled where available. Errors fall back to the deterministic paths with a clear message.
+  - All three ask for JSON output against the same schema; the server validates the result before anything is shown. Errors fall back to the deterministic paths with a clear message.
 
 ## Trade-offs I'd revisit with more time
 

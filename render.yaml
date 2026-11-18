@@ -12,6 +12,10 @@ services:
           property: connectionString
       - key: ANTHROPIC_API_KEY
         sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
       - key: CLAUDE_MODEL
         value: claude-opus-5-5
 databases:

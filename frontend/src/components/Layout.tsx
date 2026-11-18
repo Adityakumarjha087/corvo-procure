@@ -8,7 +8,7 @@ import { api, getUser, setUser, User } from "../lib/api";
 import { cx, Kbd } from "./ui";
 
 export type Health = {
-  status: string; ai_available: boolean; ai_model: string; data_ready: boolean; database: string;
+  status: string; ai_available: boolean; ai_model: string; ai_provider?: string | null; data_ready: boolean; database: string;
   counts: Record<string, number>; active_policy: { version: string; effective_from: string } | null;
 };
 const HealthCtx = createContext<{ health: Health | null; refresh: () => void; online: boolean }>({ health: null, refresh: () => {}, online: true });
@@ -204,7 +204,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <StatusRow label="API" ok={online} text={online ? "online" : "offline"} />
             <StatusRow label="Database" ok={!!health} text={health?.database ?? "…"} />
             <StatusRow label="Master data" ok={!!health?.data_ready} text={health?.data_ready ? "loaded" : "not loaded"} />
-            <StatusRow label="AI reader" ok={!!health?.ai_available} warn text={health?.ai_available ? "Claude" : "rule-based"} />
+            <StatusRow label="AI reader" ok={!!health?.ai_available} warn text={health?.ai_available ? aiLabel(health?.ai_provider) : "rule-based"} />
             <StatusRow label="Policy today" ok={!!health?.active_policy} text={health?.active_policy ? `v${health.active_policy.version}` : "…"} />
           </div>
         </aside>
@@ -272,4 +272,8 @@ function MobileNav() {
       </AnimatePresence>
     </div>
   );
+}
+
+export function aiLabel(p?: string | null) {
+  return p === "gemini" ? "Gemini" : p === "groq" ? "Groq" : "Claude";
 }

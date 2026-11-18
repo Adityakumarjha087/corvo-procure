@@ -4,7 +4,7 @@ A web app where Corvo Engineering's employees raise purchase requests by **chatt
 
 - **Engine & API:** Python 3.12 · FastAPI · SQLAlchemy (Postgres or SQLite)
 - **UI:** React 18 · TypeScript · Tailwind · Framer Motion
-- **AI:** Claude (`claude-opus-5-5`) for chat extraction and amendment reading. A deterministic fallback runs everywhere without a key.
+- **AI:** chat extraction and amendment reading through Claude (`claude-opus-5-5`), Google Gemini (free AI Studio key) or Groq (free key), whichever key is set. A deterministic fallback runs everywhere without a key.
 
 | Doc | What's in it |
 |---|---|
@@ -17,7 +17,7 @@ A web app where Corvo Engineering's employees raise purchase requests by **chatt
 
 ```bash
 # optional: put the task kit at ./data/kit (it is gitignored, never committed)
-# optional: export ANTHROPIC_API_KEY=...   (enables Claude for chat + amendment reading)
+# optional: export GEMINI_API_KEY=... (or GROQ_API_KEY / ANTHROPIC_API_KEY) to enable AI chat + amendment reading
 docker compose up --build
 ```
 
@@ -43,13 +43,17 @@ cd backend && KIT_DIR=../data/kit .venv/bin/python -m pytest -q
 |---|---|---|
 | `DATABASE_URL` | `sqlite:///./cantill.db` | Any SQLAlchemy URL; `postgres://` is accepted |
 | `KIT_DIR` | unset | Folder laid out like the task kit; loaded on first start if the DB is empty |
-| `ANTHROPIC_API_KEY` | unset | Enables Claude; without it, chat uses the rule-based extractor and policy changes use the Rule builder or "Edit as JSON" |
-| `CLAUDE_MODEL` | `claude-opus-5-5` | Model for chat extraction and amendment reading |
+| `ANTHROPIC_API_KEY` | unset | AI provider 1: Claude |
+| `GEMINI_API_KEY` | unset | AI provider 2: Google Gemini (free key at aistudio.google.com); reads amendment PDFs natively |
+| `GROQ_API_KEY` | unset | AI provider 3: Groq (free key at console.groq.com); amendment PDFs are sent as extracted text |
+| `CLAUDE_MODEL` / `GEMINI_MODEL` / `GROQ_MODEL` | `claude-opus-5-5` / `gemini-2.5-flash` / `openai/gpt-oss-120b` | Model per provider |
+
+The first key that is set wins (Claude, then Gemini, then Groq). With no key, chat uses the rule-based extractor and policy changes use the Rule builder or "Edit as JSON".
 | `STATIC_DIR` | `../frontend/dist` | Built UI served by the API |
 
 ### Hosting (Render)
 
-- **Backend (Render):** `render.yaml` is a blueprint: a Docker web service plus a free Postgres. Create the blueprint from the repo, set `ANTHROPIC_API_KEY`, then upload the kit once in **Data & audit**. The Render URL also serves the full app on its own.
+- **Backend (Render):** `render.yaml` is a blueprint: a Docker web service plus a free Postgres. Create the blueprint from the repo, set one AI key (`GEMINI_API_KEY` is free), then upload the kit once in **Data & audit**. The Render URL also serves the full app on its own.
 - **Frontend (Vercel):** import the repo with **Root Directory = `frontend`**. `frontend/vercel.json` builds the Vite app and proxies `/api/*` to the Render backend, so the UI needs no API URL setting and no CORS. If the Render URL differs, change it in `vercel.json`.
 
 ---

@@ -300,7 +300,7 @@ function ProposeModal({ open, onClose, aiOn, latest, schema, onCreated }: { open
       <div className="space-y-4">
         <Tabs value={mode} onChange={setMode} items={[{ value: "builder", label: <><SlidersHorizontal className="h-3.5 w-3.5" />Rule builder</> }, { value: "upload", label: <><FileUp className="h-3.5 w-3.5" />Upload amendment</> }, { value: "describe", label: <><Wand2 className="h-3.5 w-3.5" />Describe in words</> }, { value: "json", label: <><Braces className="h-3.5 w-3.5" />Edit as JSON</> }]} />
         {mode === "builder" && <PolicyBuilder base={base} schema={schema} doc={built} setDoc={setBuilt} />}
-        {!aiOn && (mode === "upload" || mode === "describe") && <div className="rounded-lg border border-warn/30 bg-warn/5 p-3 text-[12.5px]">The AI reader is not configured on this server (set <Mono>ANTHROPIC_API_KEY</Mono>). Use the <b>Rule builder</b> (or <b>Edit as JSON</b>) to make the change by hand; it is validated and shown as a plain-language diff before approval.</div>}
+        {!aiOn && (mode === "upload" || mode === "describe") && <div className="rounded-lg border border-warn/30 bg-warn/5 p-3 text-[12.5px]">The AI reader is not configured on this server (set <Mono>GEMINI_API_KEY</Mono>, <Mono>GROQ_API_KEY</Mono> or <Mono>ANTHROPIC_API_KEY</Mono>). Use the <b>Rule builder</b> (or <b>Edit as JSON</b>) to make the change by hand; it is validated and shown as a plain-language diff before approval.</div>}
         {mode === "upload" && (
           <>
             <Dropzone onFiles={(f) => setFile(f[0])} accept=".pdf,.txt,.md" label={file ? file.name : "Drop the amendment (PDF, TXT or MD)"} sub="The AI proposes edits to the latest approved version; you review every change before it applies." />

@@ -3,7 +3,7 @@ import { Bot, CalendarDays, CheckCircle2, Factory, Hash, Package, RotateCcw, Sen
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useHealth, useUser } from "../components/Layout";
+import { aiLabel, useHealth, useUser } from "../components/Layout";
 import { Badge, Button, Card, Mono, PageHeader, RouteBadge, cx } from "../components/ui";
 import { api } from "../lib/api";
 import { fmtDate, inr, num } from "../lib/format";
@@ -106,7 +106,7 @@ export default function ChatPage() {
           <Card className="flex h-[calc(100vh-220px)] min-h-[520px] flex-col overflow-hidden">
             <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
               <div className="flex items-center gap-2 text-sm"><span className="grid h-7 w-7 place-items-center rounded-lg bg-accent/15 text-accent"><Bot className="h-4 w-4" /></span><span className="font-medium">Intake assistant</span></div>
-              <Badge tone={health?.ai_available ? "accent" : "muted"}>{health?.ai_available ? <><Sparkles className="h-3 w-3" /> Claude extraction</> : "rule-based extraction"}</Badge>
+              <Badge tone={health?.ai_available ? "accent" : "muted"}>{health?.ai_available ? <><Sparkles className="h-3 w-3" /> {aiLabel(health?.ai_provider)} extraction</> : "rule-based extraction"}</Badge>
             </div>
             <div className="flex-1 space-y-4 overflow-y-auto px-4 py-5">
               <AnimatePresence initial={false}>

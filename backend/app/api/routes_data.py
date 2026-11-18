@@ -27,7 +27,7 @@ def health(db=Depends(get_db)):
               [("items", m.Item), ("suppliers", m.Supplier), ("po_history", m.PoHistory), ("contracts", m.Contract),
                ("policy_versions", m.PolicyVersion), ("runs", m.Run), ("open_prs", m.PRInbox)]}
     pv = svc.active_policy(db) if counts["policy_versions"] else None
-    return {"status": "ok", "database": m.DATABASE_URL.split(":")[0], "ai_available": ai.available(), "ai_model": ai.MODEL,
+    return {"status": "ok", "database": m.DATABASE_URL.split(":")[0], "ai_available": ai.available(), "ai_model": ai.model_name(), "ai_provider": ai.provider(),
             "data_ready": svc.data_ready(db), "counts": counts,
             "active_policy": {"version": pv.version, "effective_from": pv.effective_from.isoformat()} if pv else None}
 
