@@ -4,9 +4,9 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://corvo-procure.onrender.com/api/:path*" },
-    { "source": "/docs", "destination": "https://corvo-procure.onrender.com/docs" },
-    { "source": "/openapi.json", "destination": "https://corvo-procure.onrender.com/openapi.json" },
+    { "source": "/api/:path*", "destination": "https://corvo-procure-n8qv.onrender.com/api/:path*" },
+    { "source": "/docs", "destination": "https://corvo-procure-n8qv.onrender.com/docs" },
+    { "source": "/openapi.json", "destination": "https://corvo-procure-n8qv.onrender.com/openapi.json" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
