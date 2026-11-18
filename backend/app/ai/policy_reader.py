@@ -71,6 +71,17 @@ How to work:
 - To change a limit in an existing rule, use update_rule with the complete updated rule in rule_json.
 - New rules: choose an id that fits the clause numbering (e.g. "5.2a") and place them with before/after so they are
   checked at the right point. Plant-only or category-only rules are ordinary rules with plant / category conditions.
+- Placement is critical because the FIRST matching rule wins. Before choosing a position, check every existing rule
+  above it: if an earlier rule would also match some of the new rule's cases and give a different outcome, the new rule
+  never fires for them. So a narrower rule that overrides the general ladder (a plant-, category- or department-specific
+  limit or route) goes BEFORE the general rules it overrides (e.g. a sourcing rule for some items above a value goes before
+  "5.4 Spot PO" and "5.3 Emergency PO", otherwise those still catch the lower values). If the text says "always",
+  "regardless" or "even if on contract", place it before the contract rule 5.2 (but after 5.1 capex unless told otherwise).
+  If the text gives an explicit position, follow it. Mention the placement reasoning in the operation's explanation.
+- Do NOT add requirement_date conditions for the effective date; versions already apply from effective_from.
+- For sourcing rules, suggest 3 suppliers unless the text states a number.
+- Use category values exactly as written in the item master (e.g. "Safety & PPE", "Office & IT") and plant codes
+  (e.g. CHK1, PUN1) rather than plant names.
 - If the amendment restates the whole policy, still express it as the minimal set of operations.
 - version: the new version number if stated (e.g. "5.1"). effective_from: the stated effective date as YYYY-MM-DD; if only a
   month/day is given, use the year of the document. Null if not stated.
