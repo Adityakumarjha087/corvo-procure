@@ -143,3 +143,25 @@ def test_read_amendment_end_to_end_with_fake_groq(no_keys):
     assert out["effective_from"] == "2026-12-01"
     assert out["operations"][0]["path"] == "consolidation.window_hours" and out["operations"][0]["value"] == 48
     assert '{"fact"' in seen["system"] and "{facts}" not in seen["system"]
+
+
+def test_groq_shrinks_budget_on_413(no_keys):
+    no_keys.setenv("GROQ_API_KEY", "g")
+    budgets = []
+
+    def fake_post(url, headers, json, timeout):
+        budgets.append(json["max_completion_tokens"])
+        if len(budgets) == 1:
+            return FakeResp(413, {"error": {"message": "Request too large for model on tokens per minute (TPM): Limit 8000, Requested 9600"}})
+        return FakeResp(200, {"choices": [{"finish_reason": "stop", "message": {"content": '{"ok": 1}'}}]})
+
+    no_keys.setattr("httpx.post", fake_post)
+    assert client.structured("SYS", "hi", {"type": "object"}) == {"ok": 1}
+    assert budgets == [4096, 4096 - 1600 - 200]
+
+
+def test_groq_413_twice_gives_clear_message(no_keys):
+    no_keys.setenv("GROQ_API_KEY", "g")
+    no_keys.setattr("httpx.post", lambda *a, **k: FakeResp(413, {"error": {"message": "Limit 8000, Requested 9000"}}))
+    with pytest.raises(client.AIError, match="Groq free tier"):
+        client.structured("SYS", "hi", {"type": "object"})

@@ -146,6 +146,27 @@ def _pdf_text(b64: str) -> str:
 
 # ---------------------------------------------------------------- Groq (OpenAI-compatible)
 
+GROQ_MAX_TOKENS = int(os.getenv("GROQ_MAX_TOKENS", "4096"))
+
+
+def _groq_error(r) -> str:
+    try:
+        return str((r.json().get("error") or {}).get("message") or r.text)[:300]
+    except Exception:  # noqa: BLE001
+        return r.text[:300]
+
+
+def _groq_fit(error_text: str, current: int) -> int | None:
+    """From 'Limit 8000, Requested 9500' work out a completion budget that fits, keeping a small margin."""
+    import re
+
+    lim = re.search(r"Limit\s*:?\s*(\d+)", error_text)
+    req = re.search(r"Requested\s*:?\s*(\d+)", error_text)
+    if not (lim and req):
+        return max(1024, current // 2) if current > 1024 else None
+    smaller = current - (int(req.group(1)) - int(lim.group(1))) - 200
+    return smaller if smaller >= 1024 else None
+
 def _groq(system: str, content, schema: dict, max_tokens: int) -> str:
     import httpx
 
@@ -171,13 +192,30 @@ def _groq(system: str, content, schema: dict, max_tokens: int) -> str:
         ],
         "response_format": {"type": "json_object"},
         "temperature": 0,
-        "max_completion_tokens": max(max_tokens, 8192),
+        # Groq's free tier counts input + max_completion_tokens against a per-request token cap, so ask for a
+        # modest budget and shrink it further if Groq reports the request as too large.
+        "max_completion_tokens": GROQ_MAX_TOKENS,
     }
+    if GROQ_MODEL.startswith("openai/gpt-oss"):
+        body["reasoning_effort"] = "medium"
     headers = {"Authorization": f"Bearer {os.getenv('GROQ_API_KEY', '')}", "Content-Type": "application/json"}
-    try:
-        r = httpx.post(GROQ_URL, headers=headers, json=body, timeout=120.0)
-    except httpx.HTTPError as e:
-        raise AIError("Could not reach the AI service.") from e
+    for attempt in range(2):
+        try:
+            r = httpx.post(GROQ_URL, headers=headers, json=body, timeout=120.0)
+        except httpx.HTTPError as e:
+            raise AIError("Could not reach the AI service.") from e
+        if r.status_code != 413 or attempt == 1:
+            break
+        smaller = _groq_fit(r.text, body["max_completion_tokens"])
+        if smaller is None:
+            break
+        log.info("Groq request too large; retrying with max_completion_tokens=%s", smaller)
+        body["max_completion_tokens"] = smaller
+    if r.status_code == 413:
+        raise AIError("The request is larger than the Groq free tier allows per minute: " + _groq_error(r)
+                      + " Paste only the amendment text, or set GROQ_MODEL to a model with a higher limit.")
+    if r.status_code >= 400 and r.status_code not in (401, 403, 429):
+        raise AIError(f"AI service error ({r.status_code}): {_groq_error(r)}")
     _check_status(r, "GROQ_API_KEY")
     choice = (r.json().get("choices") or [{}])[0]
     if choice.get("finish_reason") == "length":

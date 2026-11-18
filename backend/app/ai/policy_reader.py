@@ -110,7 +110,7 @@ def read_amendment(current: dict, text: str | None = None, pdf_bytes: bytes | No
         content.append({"type": "document", "source": {"type": "base64", "media_type": "application/pdf",
                                                          "data": base64.standard_b64encode(pdf_bytes).decode()}})
     intro = (f"Current policy (version {current.get('version')}, effective {current.get('effective_from')}):\n"
-             f"```json\n{json.dumps(current, indent=1)}\n```\n\n")
+             f"```json\n{json.dumps(current, separators=(',', ':'), ensure_ascii=False)}\n```\n\n")
     if text:
         intro += f"Amendment or requested change ({source_name or 'text'}):\n<amendment>\n{text}\n</amendment>\n"
     else:
