@@ -71,7 +71,7 @@ export default function PolicyPage() {
           {!doc ? <Card className="p-6"><Skeleton className="h-6 w-40" /><Skeleton className="mt-4 h-40" /></Card> : (
             <AnimatePresence mode="wait">
               <motion.div key={doc.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                {doc.status === "draft" && <DraftPanel doc={doc} onDecided={async (id) => { await load(id); refresh(); setSel(id); api.get(`/api/policies/${id}`).then(setDoc); }} onEdited={setDoc} />}
+                {doc.status === "draft" && <DraftPanel doc={doc} schema={schema} versions={versions || []} onDecided={async (id) => { await load(id); refresh(); setSel(id); api.get(`/api/policies/${id}`).then(setDoc); }} onEdited={setDoc} />}
                 <Card className="p-5">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
@@ -166,7 +166,22 @@ function ChangeList({ changes }: { changes: any[] }) {
   );
 }
 
-function DraftPanel({ doc, onDecided, onEdited }: { doc: any; onDecided: (id: number) => void; onEdited: (d: any) => void }) {
+function DraftPanel({ doc, schema, versions, onDecided, onEdited }: { doc: any; schema: any; versions: any[]; onDecided: (id: number) => void; onEdited: (d: any) => void }) {
+  const [editOpen, setEditOpen] = useState(false);
+  const [editBase, setEditBase] = useState<any>(null);
+  const [editDoc, setEditDoc] = useState<any>(null);
+  const openEditor = async () => {
+    const baseRef = versions.find((v: any) => v.version === doc.base_version && v.status === "approved") || versions.find((v: any) => v.latest_approved);
+    try {
+      const b = baseRef ? (await api.get(`/api/policies/${baseRef.id}`)).document : doc.document;
+      setEditBase(b); setEditDoc(JSON.parse(JSON.stringify(doc.document))); setEditOpen(true);
+    } catch (e: any) { toast.error(e.message); }
+  };
+  const saveRules = async () => {
+    setBusy("rules");
+    try { const d = await api.put(`/api/policies/${doc.id}`, { document: editDoc }); onEdited(d); setImpact(null); setEditOpen(false); toast.success("Draft updated: review the changes again"); }
+    catch (e: any) { toast.error(e.message); } finally { setBusy(null); }
+  };
   const [impact, setImpact] = useState<any>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [comment, setComment] = useState("");
@@ -200,7 +215,10 @@ function DraftPanel({ doc, onDecided, onEdited }: { doc: any; onDecided: (id: nu
       <div className="space-y-4 p-5">
         {doc.ai_notes && <div className="rounded-xl border border-accent/25 bg-accent/[0.05] p-3 text-[13px]"><div className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-accent"><Sparkles className="h-3 w-3" /> AI reading of the amendment</div>{doc.ai_notes}</div>}
         <div>
-          <div className="mb-2 text-[13px] font-semibold">What will change</div>
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <div className="text-[13px] font-semibold">What will change</div>
+            <Button size="sm" variant="subtle" onClick={openEditor} disabled={!schema} icon={<SlidersHorizontal className="h-3.5 w-3.5" />}>Edit rules</Button>
+          </div>
           <ChangeList changes={doc.changes} />
         </div>
         {errors.length > 0 && <div className="rounded-xl border border-bad/30 bg-bad/5 p-3 text-[13px] text-bad">{errors.map((e: string) => <div key={e}>• {e.replace("Error: ", "")}</div>)}</div>}
@@ -219,6 +237,12 @@ function DraftPanel({ doc, onDecided, onEdited }: { doc: any; onDecided: (id: nu
           </div>
           <AnimatePresence>{impact && <ImpactView impact={impact} />}</AnimatePresence>
         </div>
+        <Modal open={editOpen} onClose={() => setEditOpen(false)} title={`Edit draft v${doc.version} in the rule builder`} wide
+          footer={<><Button variant="ghost" onClick={() => setEditOpen(false)}>Cancel</Button>
+            <Button variant="primary" loading={busy === "rules"} onClick={saveRules} disabled={!editDoc} icon={<CheckCircle2 className="h-4 w-4" />}>Save draft</Button></>}>
+          <div className="mb-3 text-[12.5px] text-muted">Fix anything the reading got wrong (a limit, a condition, or where a rule sits in the ladder: the first matching rule wins). Changes are compared with v{doc.base_version}.</div>
+          {editOpen && <PolicyBuilder base={editBase} schema={schema} doc={editDoc} setDoc={setEditDoc} />}
+        </Modal>
 
         <div className="flex flex-wrap items-end gap-2 border-t border-line pt-4">
           <Field label="Approval note (optional)" className="min-w-[240px] flex-1"><input value={comment} onChange={(e) => setComment(e.target.value)} className={inputCls} placeholder="e.g. Approved per Head of Procurement email" /></Field>

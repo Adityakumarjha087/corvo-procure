@@ -65,7 +65,7 @@ The first key that is set wins (Claude, then Gemini, then Groq). With no key, ch
 | **Overview** | everyone | The one next step (load data / process PRs / review a run), status, route mix |
 | **Raise a PR** | requesters | Chat; the assistant matches the item, asks for anything missing, previews the policy outcome, then raises the PR |
 | **Buyer workspace** | buyers | Upload a batch or process chat PRs; each PO or sourcing request has its decision, value, supplier/price or suggestions and **why** (clause, version, contract or PO relied on); **Approve** creates the PO/RFQ, **Override** needs a reason |
-| **Policy studio** | Procurement | Version timeline, rule ladder, parameters; **Propose a change** (rule builder / upload amendment / describe it / edit JSON) → plain-language diff → impact preview → approve with effective date |
+| **Policy studio** | Procurement | Version timeline, rule ladder, parameters; **Propose a change** (rule builder / upload amendment / describe it / edit JSON) → plain-language diff → fix any draft in the rule builder (**Edit rules**) → impact preview → approve with effective date |
 | **Contracts** | buyers | Register + PDF-only contracts, validity, ceiling usage; **Add contract** extracts it from the signed PDF |
 | **Preferred suppliers** | buyers | Ranked list per item as of any date with the score breakdown; **Export top 3 CSV** |
 | **Data & audit** | admin | Load/refresh master data; audit log (who, what, when); created POs and sourcing events |
@@ -99,7 +99,7 @@ curl -o run1.csv http://localhost:8000/api/runs/1/export.csv
 ## Blind-test runbook (Thu 19 Nov, 10:00–12:00 IST)
 
 1. **Run 1:** Buyer workspace → **Upload PR batch** (mode: *version by requirement date*) → **Export CSV** → save as `submission/<name>__run1.csv`.
-2. **Amendment:** Policy studio → **Propose a change** → upload the amendment (or enter it in the **Rule builder**) → read the diff, warnings and **impact preview** → check the effective date → **Approve**.
+2. **Amendment:** Policy studio → **Propose a change** → upload the amendment (or enter it in the **Rule builder**) → compare every line of the plain-language diff with the document; if the AI got a value, condition or rule position wrong, click **Edit rules** on the draft and fix it → check the effective date → **impact preview** → **Approve**.
 3. **Run 2:** Buyer workspace → select the run → **Reprocess with current policy** (or upload the batch again) → **Export CSV** → `submission/<name>__run2.csv`.
 4. **Preferred lists:** Preferred suppliers → set the given date → **Export top 3** → `submission/<name>__preferred.csv`.
 5. Commit and push **only** the `submission/` folder before 12:00.
