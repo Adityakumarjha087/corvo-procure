@@ -1,0 +1,24 @@
+# Task kit data must not be committed (Cantill rule)
+data/
+*.pdf
+*.csv
+!backend/tests/fixtures/*.csv
+# blind-test outputs must be committed
+!submission/
+!submission/*.csv
+submission_drafts/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+*.db
+*.sqlite
+
+# Node
+node_modules/
+frontend/dist/
+
+.env
+.DS_Store

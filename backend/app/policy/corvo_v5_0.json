@@ -1,0 +1,111 @@
+{
+  "policy_id": "CORVO-PROC-POL-04",
+  "version": "5.0",
+  "effective_from": "2026-04-01",
+  "title": "Corvo Engineering Procurement Policy (PR to PO)",
+  "currency": "INR",
+  "item_matching": {
+    "clause": "1",
+    "min_score": 0.72,
+    "new_item": {
+      "clause": "1.2",
+      "decision": "SOURCING_REQUEST",
+      "route": "NEW_ITEM_SOURCING",
+      "club": false,
+      "suggest_count": 0
+    }
+  },
+  "clubbing": {
+    "clause": "2.2",
+    "enabled": true,
+    "same": ["item_code", "plant"],
+    "creation_window_days": 14,
+    "need_by_window_days": 7
+  },
+  "valuation": {
+    "clause": "3.1",
+    "order": ["contract", "last_po", "standard_price"],
+    "last_po_lookback_days": 365,
+    "last_po_active_suppliers_only": false
+  },
+  "contracts": {
+    "clause": "4",
+    "supplier_statuses": ["Active"],
+    "enforce_ceiling": true,
+    "selection": "lowest_rate_with_ceiling"
+  },
+  "supplier_eligibility": {
+    "clause": "5.7",
+    "statuses": ["Active"],
+    "min_on_time_pct": null,
+    "min_quality_rating": null
+  },
+  "preferred_suppliers": {
+    "clause": "6",
+    "lookback_days": 548,
+    "include_contract_holders": true,
+    "weights": {"frequency": 0.30, "recency": 0.30, "contract": 0.15, "performance": 0.25},
+    "recency_bands": [{"max_days": 90, "score": 1.0}, {"max_days": 365, "score": 0.5}],
+    "performance": {"on_time_weight": 0.5, "quality_weight": 0.5, "quality_scale": 5}
+  },
+  "sourcing_suggestions": {
+    "clause": "6.4",
+    "topup_from_category": true
+  },
+  "consolidation": {
+    "clause": "7",
+    "enabled": true,
+    "same": ["supplier_id", "plant", "route"],
+    "window_hours": 24
+  },
+  "rules": [
+    {
+      "id": "5.1",
+      "name": "Capex items need capex sourcing",
+      "when": {"all": [{"fact": "item_type", "op": "eq", "value": "Capex"}]},
+      "then": {"decision": "SOURCING_REQUEST", "route": "CAPEX_SOURCING", "supplier": {"mode": "suggest", "count": 5}, "note": "Needs capex approval."}
+    },
+    {
+      "id": "5.2",
+      "name": "Buy against a usable rate contract",
+      "when": {"all": [{"fact": "contract_usable", "op": "eq", "value": true}]},
+      "then": {"decision": "PO", "route": "CONTRACT_PO", "supplier": {"mode": "contract"}}
+    },
+    {
+      "id": "5.3",
+      "name": "Emergency PO to proven supplier",
+      "when": {"all": [
+        {"fact": "is_emergency", "op": "eq", "value": true},
+        {"fact": "value", "op": "lte", "value": 500000},
+        {"fact": "days_since_active_purchase", "op": "lte", "value": 365}
+      ]},
+      "then": {"decision": "PO", "route": "EMERGENCY_PO", "supplier": {"mode": "preferred", "rank": 1}}
+    },
+    {
+      "id": "5.4",
+      "name": "Spot PO for small, proven purchases",
+      "when": {"all": [
+        {"fact": "value", "op": "lt", "value": 200000},
+        {"fact": "days_since_active_purchase", "op": "lte", "value": 365}
+      ]},
+      "then": {"decision": "PO", "route": "SPOT_PO", "supplier": {"mode": "preferred", "rank": 1}}
+    },
+    {
+      "id": "5.5",
+      "name": "Request for quotation",
+      "when": {"all": [{"fact": "value", "op": "lt", "value": 1000000}]},
+      "then": {"decision": "SOURCING_REQUEST", "route": "RFQ", "supplier": {"mode": "suggest", "count": 3}}
+    },
+    {
+      "id": "5.6",
+      "name": "Request for proposal",
+      "when": {"all": [{"fact": "value", "op": "gte", "value": 1000000}]},
+      "then": {"decision": "SOURCING_REQUEST", "route": "RFP", "supplier": {"mode": "suggest", "count": 5}}
+    }
+  ],
+  "fallback": {
+    "id": "fallback",
+    "name": "No rule matched: get quotes",
+    "then": {"decision": "SOURCING_REQUEST", "route": "RFQ", "supplier": {"mode": "suggest", "count": 3}}
+  }
+}

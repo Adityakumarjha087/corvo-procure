@@ -1,0 +1,34 @@
+# One command: docker compose up --build   ->  http://localhost:8000
+# Put the task kit in ./data/kit (not committed) to load it on first start, or upload it in the app (Data & audit).
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: procure
+      POSTGRES_PASSWORD: procure
+      POSTGRES_DB: procure
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U procure"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg://procure:procure@db:5432/procure
+      KIT_DIR: /data/kit
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      CLAUDE_MODEL: ${CLAUDE_MODEL:-claude-opus-5-5}
+    volumes:
+      - ./data:/data:ro
+    ports:
+      - "8000:8000"
+
+volumes:
+  pgdata:
