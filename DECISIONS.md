@@ -137,3 +137,13 @@ Ties go to the more recent last PO, then supplier id.
 - PO history is as at 28 Oct 2026. Decisions made by the app don't feed back into "history" for later requirements in the same batch, which keeps runs reproducible and order-independent beyond what the policy defines.
 - Chat dates: "Friday" and "next Friday" both mean the coming Friday, never today. The resolved date is always shown back before the PR is raised.
 - The task kit is not committed (rule from Cantill). It is loaded at runtime from `KIT_DIR` or uploaded in **Data & audit**. PDFs of contracts not in the register are added automatically. PDFs already in the register are cross-checked: all 10 match.
+
+---
+
+## Blind test (19 Nov 2026): Amendment No. 1, v5.1
+
+- **How it went in:** uploaded `Corvo_Policy_Amendment_1_v5.1.pdf` in Policy studio. The AI reader (Groq) captured the version (5.1) and effective date (2026-12-01), but its rule edits came back malformed and were rejected by validation, so the draft held no rule changes. Following the app's review flow, I corrected the draft's rules with **Edit rules** (rule builder), checked the plain-language diff against clauses A1 to A3, ran the impact preview on Run 1 (19 lines change) and approved.
+- **A1 (Packaging spot limit):** implemented as a change to rule 5.4 only: spot PO no longer applies to Packaging at ₹1,00,000 or more, so those requirements fall through to RFQ/RFP. The emergency rule 5.3 is left unchanged, because A1 only amends the limit in rule 5.4, while A3 explicitly says when emergency POs are overridden.
+- **A2 (RFP threshold):** rules 5.5/5.6 now split at ₹8,00,000 (below → RFQ, at or above → RFP).
+- **A3 (Chakan electrical safety):** new rule 5.2A immediately after 5.2: CHK1 + Electrical Spares + value from ₹50,000 to below ₹8,00,000 → RFQ. At ₹8,00,000 or more the requirement cannot match 5.3/5.4/5.5 and reaches 5.6 (RFP), which gives "RFQ, or RFP at or above the RFP threshold" with one rule. Contract POs (5.2) still win, as the amendment allows.
+- **Which version decides:** the version in force on each requirement's date (v5.0 before 1 Dec, v5.1 from 1 Dec), so Run 2 mixes both versions.
