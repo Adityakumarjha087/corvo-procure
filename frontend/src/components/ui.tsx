@@ -166,9 +166,9 @@ export function Drawer({ open, onClose, children, width = 720 }: { open: boolean
 
 export function Tabs<T extends string>({ value, onChange, items }: { value: T; onChange: (v: T) => void; items: { value: T; label: React.ReactNode; count?: number }[] }) {
   return (
-    <div className="inline-flex max-w-full overflow-x-auto rounded-lg border border-line bg-panel2 p-0.5">
+    <div role="tablist" className="inline-flex max-w-full overflow-x-auto rounded-lg border border-line bg-panel2 p-0.5">
       {items.map((it) => (
-        <button key={it.value} onClick={() => onChange(it.value)} className={cx("relative shrink-0 whitespace-nowrap rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors", value === it.value ? "text-ink" : "text-muted hover:text-ink")}>
+        <button key={it.value} role="tab" type="button" aria-selected={value === it.value} onClick={() => onChange(it.value)} className={cx("relative shrink-0 whitespace-nowrap rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors", value === it.value ? "text-ink" : "text-muted hover:text-ink")}>
           {value === it.value && <motion.span layoutId={`tab-${items.map((i) => i.value).join()}`} className="absolute inset-0 rounded-md border border-line bg-panel shadow-sm" transition={{ type: "spring", stiffness: 400, damping: 32 }} />}
           <span className="relative flex items-center gap-1.5">{it.label}{it.count !== undefined && <span className="tabular text-[11px] text-faint">{it.count}</span>}</span>
         </button>
@@ -206,7 +206,8 @@ export function Dropzone({ onFiles, accept, multiple, label, sub, busy }: { onFi
       onDragLeave={() => setOver(false)}
       onDrop={(e) => { e.preventDefault(); setOver(false); const fs = Array.from(e.dataTransfer.files); if (fs.length) onFiles(fs); }}
       onClick={() => ref.current?.click()}
-      role="button" tabIndex={0} onKeyDown={(e) => e.key === "Enter" && ref.current?.click()}
+      role="button" tabIndex={0} aria-label={label} aria-busy={busy || undefined}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); ref.current?.click(); } }}
       className={cx("group relative flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed px-6 py-8 text-center transition-all",
         over ? "border-accent bg-accent/5 scale-[1.01]" : "border-line bg-panel2/50 hover:border-accent/50")}
     >
