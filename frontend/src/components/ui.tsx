@@ -111,6 +111,17 @@ export function Empty({ icon, title, desc, action }: { icon?: React.ReactNode; t
 }
 
 export function Modal({ open, onClose, title, children, footer, wide }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode; footer?: React.ReactNode; wide?: boolean }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  // Move focus into the dialog when it opens and hand it back to the trigger on close.
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.activeElement as HTMLElement | null;
+    const t = setTimeout(() => {
+      const el = dialogRef.current;
+      if (el && !el.contains(document.activeElement)) el.focus();
+    }, 0);
+    return () => { clearTimeout(t); prev?.focus?.(); };
+  }, [open]);
   useEffect(() => {
     const k = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     if (open) window.addEventListener("keydown", k);
@@ -122,10 +133,10 @@ export function Modal({ open, onClose, title, children, footer, wide }: { open: 
         <motion.div className="fixed inset-0 z-50 grid place-items-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
           <motion.div
-            role="dialog" aria-modal="true" aria-label={title}
+            ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={title}
             initial={{ y: 16, scale: 0.98, opacity: 0 }} animate={{ y: 0, scale: 1, opacity: 1 }} exit={{ y: 10, opacity: 0 }}
             transition={{ type: "spring", stiffness: 380, damping: 30 }}
-            className={cx("relative w-full rounded-2xl border border-line bg-panel shadow-2xl", wide ? "max-w-4xl" : "max-w-lg")}
+            className={cx("relative w-full rounded-2xl border border-line bg-panel shadow-2xl focus:outline-none", wide ? "max-w-4xl" : "max-w-lg")}
           >
             <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
               <h3 className="text-base font-semibold">{title}</h3>

@@ -88,7 +88,7 @@ function UserMenu() {
 function ThemeToggle() {
   const [dark, setDark] = useState(document.documentElement.classList.contains("dark"));
   return (
-    <button aria-label="Toggle theme" onClick={() => {
+    <button aria-label="Dark mode" aria-pressed={dark} onClick={() => {
       const d = !dark; setDark(d);
       document.documentElement.classList.toggle("dark", d);
       try { localStorage.setItem("theme", d ? "dark" : "light"); } catch {}
@@ -123,10 +123,10 @@ function CommandPalette({ open, onClose }: { open: boolean; onClose: () => void 
       {open && (
         <motion.div className="fixed inset-0 z-[60] flex items-start justify-center p-4 pt-[12vh]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-          <motion.div initial={{ scale: 0.97, y: -8 }} animate={{ scale: 1, y: 0 }} className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-line bg-panel shadow-2xl">
+          <motion.div role="dialog" aria-modal="true" aria-label="Command palette" initial={{ scale: 0.97, y: -8 }} animate={{ scale: 1, y: 0 }} className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-line bg-panel shadow-2xl">
             <div className="flex items-center gap-2 border-b border-line px-4">
               <Search className="h-4 w-4 text-muted" />
-              <input autoFocus value={q} onChange={(e) => { setQ(e.target.value); setSel(0); }} placeholder="Jump to a page or search items…"
+              <input autoFocus aria-label="Jump to a page or search items" value={q} onChange={(e) => { setQ(e.target.value); setSel(0); }} placeholder="Jump to a page or search items…"
                 onKeyDown={(e) => {
                   if (e.key === "ArrowDown") { e.preventDefault(); setSel((s) => Math.min(s + 1, results.length - 1)); }
                   if (e.key === "ArrowUp") { e.preventDefault(); setSel((s) => Math.max(s - 1, 0)); }
