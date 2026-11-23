@@ -108,7 +108,7 @@ export default function ChatPage() {
               <div className="flex items-center gap-2 text-sm"><span className="grid h-7 w-7 place-items-center rounded-lg bg-accent/15 text-accent"><Bot className="h-4 w-4" /></span><span className="font-medium">Intake assistant</span></div>
               <Badge tone={health?.ai_available ? "accent" : "muted"}>{health?.ai_available ? <><Sparkles className="h-3 w-3" /> {aiLabel(health?.ai_provider)} extraction</> : "rule-based extraction"}</Badge>
             </div>
-            <div className="flex-1 space-y-4 overflow-y-auto px-4 py-5">
+            <div role="log" aria-live="polite" aria-relevant="additions" aria-label="Conversation with the intake assistant" aria-busy={busy} tabIndex={0} className="flex-1 space-y-4 overflow-y-auto px-4 py-5 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent/60">
               <AnimatePresence initial={false}>
                 {msgs.map((m, i) => (
                   <motion.div key={i} initial={{ opacity: 0, y: 8, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: "spring", stiffness: 360, damping: 30 }}
