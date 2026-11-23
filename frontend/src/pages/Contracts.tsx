@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { AlertTriangle, ChevronDown, FilePlus2, FileText, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Badge, Button, Card, Dropzone, Field, Modal, Mono, PageHeader, Progress, Skeleton, Tabs, cx, inputCls, stagger } from "../components/ui";
+import { Badge, Button, Card, Dropzone, Empty, Field, Modal, Mono, PageHeader, Progress, Skeleton, Tabs, cx, inputCls, stagger } from "../components/ui";
 import { api } from "../lib/api";
 import { compactInr, fmtDate, inr, num } from "../lib/format";
 
@@ -13,7 +13,8 @@ export default function ContractsPage() {
   const [filter, setFilter] = useState<"all" | "active" | "upcoming" | "expired">("all");
   const [openId, setOpenId] = useState<string | null>(null);
   const [add, setAdd] = useState(false);
-  const load = () => api.get("/api/contracts").then(setRows).catch(() => setRows([]));
+  const [failed, setFailed] = useState(false);
+  const load = () => api.get("/api/contracts").then((r) => { setRows(r); setFailed(false); }).catch(() => { setRows([]); setFailed(true); });
   useEffect(() => { load(); }, []);
   const shown = (rows || []).filter((c) => filter === "all" || c.state === filter);
 
@@ -27,15 +28,20 @@ export default function ContractsPage() {
           { value: "all", label: "All", count: rows?.length }, { value: "active", label: "Active today", count: rows?.filter((r) => r.state === "active").length },
           { value: "upcoming", label: "Upcoming", count: rows?.filter((r) => r.state === "upcoming").length }, { value: "expired", label: "Expired", count: rows?.filter((r) => r.state === "expired").length }]} />
       </div>
-      {rows === null ? <Skeleton className="h-64" /> : (
+      {rows === null ? <Skeleton className="h-64" /> : shown.length === 0 ? (
+        <Card><Empty icon={<FileText className="h-5 w-5" />}
+          title={failed ? "Could not load contracts" : filter === "all" ? "No rate contracts yet" : `No ${filter} contracts`}
+          desc={failed ? "The server did not respond. Check that the backend is running, then try again." : filter === "all" ? "Add a signed contract to let the engine price against it." : "Switch to another tab to see the rest."}
+          action={failed ? <Button size="sm" onClick={load}>Retry</Button> : filter === "all" ? <Button size="sm" variant="primary" onClick={() => setAdd(true)} icon={<FilePlus2 className="h-4 w-4" />}>Add contract</Button> : undefined} /></Card>
+      ) : (
         <div className="space-y-2">
           {shown.map((c, i) => {
-            const used = (c.consumed_value / c.value_cap) * 100;
+            const used = c.value_cap > 0 ? (c.consumed_value / c.value_cap) * 100 : 0;
             const open = openId === c.contract_id;
             return (
               <motion.div key={c.contract_id} {...stagger(i)}>
                 <Card className={cx("overflow-hidden transition-colors", open && "border-accent/40")}>
-                  <button onClick={() => setOpenId(open ? null : c.contract_id)} className="grid w-full grid-cols-2 items-center gap-4 px-4 py-3 text-left md:grid-cols-[130px_minmax(0,1fr)_200px_220px_110px_20px]">
+                  <button aria-expanded={open} onClick={() => setOpenId(open ? null : c.contract_id)} className="grid w-full grid-cols-2 items-center gap-4 px-4 py-3 text-left md:grid-cols-[130px_minmax(0,1fr)_200px_220px_110px_20px]">
                     <div><Mono className="text-ink">{c.contract_id}</Mono><div className="mt-0.5"><SourceBadge s={c.source} /></div></div>
                     <div className="min-w-0">
                       <div className="truncate text-[14px] font-medium">{c.supplier_name}</div>
