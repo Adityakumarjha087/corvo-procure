@@ -3,7 +3,7 @@ import { Database, FileArchive, History, RefreshCcw, ServerCog } from "lucide-re
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useHealth } from "../components/Layout";
-import { AnimatedNumber, Badge, Button, Card, Dropzone, Mono, PageHeader, Stat, Tabs, stagger } from "../components/ui";
+import { AnimatedNumber, Badge, Button, Card, Dropzone, Empty, Mono, PageHeader, Stat, Tabs, stagger } from "../components/ui";
 import { api } from "../lib/api";
 import { fmtDateTime } from "../lib/format";
 
@@ -14,7 +14,12 @@ export default function DataPage() {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [tab, setTab] = useState<"audit" | "docs">("audit");
-  const load = () => { api.get("/api/audit?limit=300").then(setAudit); api.get("/api/documents").then(setDocs); };
+  const [loadError, setLoadError] = useState(false);
+  const load = () => {
+    setLoadError(false);
+    api.get("/api/audit?limit=300").then(setAudit).catch(() => setLoadError(true));
+    api.get("/api/documents").then(setDocs).catch(() => setLoadError(true));
+  };
   useEffect(() => { load(); }, []);
 
   const upload = async (files: File[]) => {
@@ -62,10 +67,20 @@ export default function DataPage() {
           <div className="flex items-center gap-2"><History className="h-4 w-4 text-accent" /><h3 className="text-[15px] font-semibold">Records</h3></div>
           <Tabs value={tab} onChange={setTab} items={[{ value: "audit", label: "Audit log", count: audit.length }, { value: "docs", label: "POs & sourcing events", count: docs.length }]} />
         </div>
-        {tab === "audit" ? (
+        {loadError && (
+          <div role="alert" className="mb-3 flex items-center justify-between gap-3 rounded-lg border border-bad/30 bg-bad/5 px-3 py-2 text-[12.5px]">
+            <span>Could not load the records. Check that the backend is running.</span>
+            <Button size="sm" variant="ghost" onClick={load} icon={<RefreshCcw className="h-3.5 w-3.5" />}>Retry</Button>
+          </div>
+        )}
+        {(tab === "audit" ? audit : docs).length === 0 ? (
+          <Empty icon={<History className="h-5 w-5" />}
+            title={tab === "audit" ? "No activity recorded yet" : "No purchase orders or sourcing events yet"}
+            desc={tab === "audit" ? "Every action — uploads, approvals, policy changes — will be listed here with who did it and when." : "Documents appear here once a request is turned into a PO or sourcing event."} />
+        ) : tab === "audit" ? (
           <div className="max-h-[60vh] overflow-auto rounded-lg border border-line">
             <table className="w-full text-[12.5px]">
-              <thead className="sticky top-0 bg-panel2 text-left text-[11px] text-faint"><tr>{["When", "Who", "Action", "Entity", "Detail"].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr></thead>
+              <thead className="sticky top-0 bg-panel2 text-left text-[11px] text-faint"><tr>{["When", "Who", "Action", "Entity", "Detail"].map((h) => <th key={h} scope="col" className="px-3 py-2 font-medium">{h}</th>)}</tr></thead>
               <tbody className="divide-y divide-line">
                 {audit.map((a) => (
                   <tr key={a.id} className="align-top hover:bg-panel2/40">
@@ -80,7 +95,7 @@ export default function DataPage() {
         ) : (
           <div className="max-h-[60vh] overflow-auto rounded-lg border border-line">
             <table className="w-full text-[12.5px]">
-              <thead className="sticky top-0 bg-panel2 text-left text-[11px] text-faint"><tr>{["Document", "Type", "From", "Supplier", "Plant", "Value", "Created"].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr></thead>
+              <thead className="sticky top-0 bg-panel2 text-left text-[11px] text-faint"><tr>{["Document", "Type", "From", "Supplier", "Plant", "Value", "Created"].map((h) => <th key={h} scope="col" className="px-3 py-2 font-medium">{h}</th>)}</tr></thead>
               <tbody className="divide-y divide-line">
                 {docs.map((d) => (
                   <tr key={d.doc_no}><td className="px-3 py-1.5 font-mono text-accent">{d.doc_no}</td><td className="px-3 py-1.5">{d.route}</td><td className="px-3 py-1.5 font-mono">run {d.run_id} · {d.target}</td>
