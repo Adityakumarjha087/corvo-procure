@@ -36,10 +36,13 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [mine, setMine] = useState<any[]>([]);
+  const [mineError, setMineError] = useState(false);
   const end = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const loadMine = () => api.get("/api/inbox").then((rows) => setMine(rows.filter((r: any) => r.requester === user.name).slice(0, 6))).catch(() => {});
+  const loadMine = () => api.get("/api/inbox")
+    .then((rows) => { setMineError(false); setMine(rows.filter((r: any) => r.requester === user.name).slice(0, 6)); })
+    .catch(() => setMineError(true));
   useEffect(() => { loadMine(); }, [user.name]);
   useEffect(() => { end.current?.scrollIntoView({ behavior: "smooth", block: "end" }); }, [msgs, busy]);
 
@@ -200,7 +203,9 @@ export default function ChatPage() {
 
             <Card className="p-4">
               <h3 className="mb-2 text-[14px] font-semibold">Your recent PRs</h3>
-              {mine.length === 0 ? <div className="text-[13px] text-muted">Nothing raised yet.</div> : (
+              {mineError ? (
+                <div role="alert" className="text-[13px] text-bad">Couldn't load your PRs. <button className="text-accent underline" onClick={loadMine}>Try again</button></div>
+              ) : mine.length === 0 ? <div className="text-[13px] text-muted">Nothing raised yet.</div> : (
                 <div className="space-y-2">
                   {mine.map((r) => (
                     <div key={r.id} className="flex items-center justify-between gap-2 text-[13px]">
