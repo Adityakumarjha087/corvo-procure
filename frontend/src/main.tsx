@@ -1,3 +1,4 @@
+import { MotionConfig } from "framer-motion";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
@@ -14,6 +15,7 @@ import Workspace from "./pages/Workspace";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
+    <MotionConfig reducedMotion="user">
     <BrowserRouter>
       <Layout>
         <Routes>
@@ -30,5 +32,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       </Layout>
       <Toaster position="bottom-right" theme="system" richColors closeButton toastOptions={{ style: { fontFamily: "Inter, system-ui, sans-serif" } }} />
     </BrowserRouter>
+    </MotionConfig>
   </React.StrictMode>,
 );
