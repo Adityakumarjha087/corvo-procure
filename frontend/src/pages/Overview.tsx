@@ -28,10 +28,14 @@ export default function Overview() {
   const [runs, setRuns] = useState<any[] | null>(null);
   const [audit, setAudit] = useState<any[]>([]);
   const [busy, setBusy] = useState(false);
-  useEffect(() => {
-    api.get("/api/runs").then(setRuns).catch(() => setRuns([]));
-    api.get("/api/audit?limit=8").then(setAudit).catch(() => {});
-  }, []);
+  const [runsError, setRunsError] = useState(false);
+  const [auditError, setAuditError] = useState(false);
+  const load = () => {
+    setRunsError(false); setAuditError(false);
+    api.get("/api/runs").then(setRuns).catch(() => { setRuns([]); setRunsError(true); });
+    api.get("/api/audit?limit=8").then(setAudit).catch(() => setAuditError(true));
+  };
+  useEffect(load, []);
   const latest = runs?.[0];
   const routes: Record<string, number> = latest?.summary?.routes || {};
   const totalReq = Object.values(routes).reduce((a: number, b: any) => a + b, 0) || 1;
@@ -104,7 +108,7 @@ export default function Overview() {
           </div>
           {runs === null ? <Skeleton className="h-24" /> : latest ? (
             <>
-              <div className="flex h-3 w-full overflow-hidden rounded-full bg-panel2">
+              <div role="img" aria-label={`Route mix: ${Object.entries(routes).map(([k, v]) => `${routeInfo(k).label} ${v}`).join(", ")}`} className="flex h-3 w-full overflow-hidden rounded-full bg-panel2">
                 {Object.entries(routes).map(([k, v], i) => (
                   <motion.div key={k} title={`${routeInfo(k).label}: ${v}`} className={cx("h-full", TONE_BG[routeInfo(k).tone])}
                     style={{ opacity: 0.55 + 0.45 * ((i % 3) / 2) }} initial={{ width: 0 }} animate={{ width: `${(Number(v) / totalReq) * 100}%` }} transition={{ delay: 0.1 + i * 0.05, type: "spring", stiffness: 60 }} />
@@ -119,6 +123,10 @@ export default function Overview() {
                 ))}
               </div>
             </>
+          ) : runsError ? (
+            <div role="alert" className="py-8 text-center text-sm text-bad">
+              Couldn't load processed batches. <button className="text-accent underline" onClick={load}>Try again</button>
+            </div>
           ) : <div className="py-8 text-center text-sm text-muted">Process a batch to see how requirements are routed.</div>}
         </Card>
 
@@ -163,7 +171,12 @@ export default function Overview() {
           <Link to="/data" className="text-[13px] text-accent hover:underline">Full audit log →</Link>
         </div>
         <div className="divide-y divide-line">
-          {audit.length === 0 && <div className="py-4 text-sm text-muted">No activity yet.</div>}
+          {auditError && (
+            <div role="alert" className="py-4 text-sm text-bad">
+              Couldn't load recent activity. <button className="text-accent underline" onClick={load}>Try again</button>
+            </div>
+          )}
+          {!auditError && audit.length === 0 && <div className="py-4 text-sm text-muted">No activity yet.</div>}
           {audit.map((a, i) => (
             <motion.div key={a.id} {...stagger(i)} className="flex items-center gap-3 py-2 text-[13px]">
               <span className="w-24 shrink-0 text-faint">{ago(a.at)}</span>
