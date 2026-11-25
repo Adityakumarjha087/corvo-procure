@@ -30,15 +30,23 @@ export default function PolicyPage() {
   const [schema, setSchema] = useState<any>(null);
   const [tab, setTab] = useState<"rules" | "params" | "changes" | "json">("rules");
   const [propose, setPropose] = useState(false);
+  const [listError, setListError] = useState<string | null>(null);
+  const [docError, setDocError] = useState<string | null>(null);
 
   const load = async (select?: number) => {
-    const vs = await api.get("/api/policies");
+    let vs: any[];
+    try { vs = await api.get("/api/policies"); } catch (e: any) { setListError(e.message || "Request failed"); return; }
+    setListError(null);
     setVersions(vs);
     const target = select ?? sel ?? (vs.find((v: any) => v.status === "draft")?.id || vs.find((v: any) => v.in_force_today)?.id || vs[0]?.id);
     if (target) setSel(target);
   };
   useEffect(() => { load(); api.get("/api/policies/schema").then(setSchema); }, []);
-  useEffect(() => { if (sel) { setDoc(null); api.get(`/api/policies/${sel}`).then((d) => { setDoc(d); if (d.status === "draft") setTab("changes"); }); } }, [sel]);
+  const loadDoc = (id: number) => {
+    setDoc(null); setDocError(null);
+    api.get(`/api/policies/${id}`).then((d) => { setDoc(d); if (d.status === "draft") setTab("changes"); }).catch((e: any) => setDocError(e.message || "Request failed"));
+  };
+  useEffect(() => { if (sel) loadDoc(sel); }, [sel]);
 
   return (
     <div>
@@ -49,10 +57,12 @@ export default function PolicyPage() {
       <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
         <Card className="h-fit p-2">
           <div className="px-2 pb-2 pt-1 text-[11px] font-medium uppercase tracking-wider text-faint">Versions</div>
-          {versions === null ? <Skeleton className="m-2 h-24" /> : (
+          {listError ? (
+            <div role="alert" className="m-2 text-[13px] text-bad">Couldn't load policy versions ({listError}). <button className="text-accent underline" onClick={() => load()}>Try again</button></div>
+          ) : versions === null ? <Skeleton className="m-2 h-24" /> : (
             <div className="relative space-y-1">
               {versions.map((v, i) => (
-                <motion.button key={v.id} {...stagger(i)} onClick={() => setSel(v.id)}
+                <motion.button key={v.id} {...stagger(i)} onClick={() => setSel(v.id)} aria-current={sel === v.id ? "true" : undefined}
                   className={cx("relative w-full rounded-lg px-3 py-2.5 text-left transition-colors", sel === v.id ? "bg-panel2" : "hover:bg-panel2/60")}>
                   {sel === v.id && <motion.span layoutId="ver-sel" className="absolute inset-y-2 left-0 w-[3px] rounded-full bg-accent" />}
                   <div className="flex items-center justify-between">
@@ -68,7 +78,9 @@ export default function PolicyPage() {
         </Card>
 
         <div className="min-w-0">
-          {!doc ? <Card className="p-6"><Skeleton className="h-6 w-40" /><Skeleton className="mt-4 h-40" /></Card> : (
+          {docError ? (
+            <Card className="p-6"><div role="alert" className="text-[13px] text-bad">Couldn't load this version ({docError}). <button className="text-accent underline" onClick={() => sel && loadDoc(sel)}>Try again</button></div></Card>
+          ) : !doc ? <Card className="p-6"><Skeleton className="h-6 w-40" /><Skeleton className="mt-4 h-40" /></Card> : (
             <AnimatePresence mode="wait">
               <motion.div key={doc.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
                 {doc.status === "draft" && <DraftPanel doc={doc} schema={schema} versions={versions || []} onDecided={async (id) => { await load(id); refresh(); setSel(id); api.get(`/api/policies/${id}`).then(setDoc); }} onEdited={setDoc} />}
