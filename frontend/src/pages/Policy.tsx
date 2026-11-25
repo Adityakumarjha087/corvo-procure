@@ -345,14 +345,14 @@ function ProposeModal({ open, onClose, aiOn, latest, schema, onCreated }: { open
         )}
         {mode === "describe" && (
           <>
-            <textarea value={text} onChange={(e) => setText(e.target.value)} rows={5} className={cx(inputCls, "h-auto py-2")} placeholder="Describe the change, including when it takes effect." />
-            <div className="flex flex-wrap gap-1.5">{EXAMPLES.map((e) => <button key={e} onClick={() => setText(e)} className="rounded-full border border-line px-2.5 py-1 text-left text-[12px] text-muted hover:border-accent/50 hover:text-ink">{e}</button>)}</div>
+            <textarea value={text} onChange={(e) => setText(e.target.value)} aria-label="Describe the policy change" rows={5} className={cx(inputCls, "h-auto py-2")} placeholder="Describe the change, including when it takes effect." />
+            <div className="flex flex-wrap gap-1.5">{EXAMPLES.map((e) => <button key={e} type="button" onClick={() => setText(e)} className="rounded-full border border-line px-2.5 py-1 text-left text-[12px] text-muted hover:border-accent/50 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent">{e}</button>)}</div>
           </>
         )}
         {mode === "json" && (
           <>
-            <textarea value={json} onChange={(e) => setJson(e.target.value)} spellCheck={false} rows={18} className={cx(inputCls, "h-auto py-2 font-mono text-[12px] leading-relaxed")} />
-            {parsedErr ? <div className="text-[12px] text-bad">{parsedErr}</div> : <div className="text-[12px] text-muted">Valid JSON. The server validates facts, operators and outcomes, then shows the diff.</div>}
+            <textarea value={json} onChange={(e) => setJson(e.target.value)} spellCheck={false} aria-label="Policy document as JSON" aria-invalid={!!parsedErr} rows={18} className={cx(inputCls, "h-auto py-2 font-mono text-[12px] leading-relaxed")} />
+            {parsedErr ? <div role="alert" className="text-[12px] text-bad">Invalid JSON: {parsedErr}</div> : <div className="text-[12px] text-muted">Valid JSON. The server validates facts, operators and outcomes, then shows the diff.</div>}
           </>
         )}
       </div>
