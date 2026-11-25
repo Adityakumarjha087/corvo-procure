@@ -27,16 +27,19 @@ export default function Workspace() {
   const [open, setOpen] = useState<Work | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const loadRuns = () => api.get("/api/runs").then((r) => { setRuns(r); return r; });
   const loadRun = (id: number | string) => { setLoading(true); return api.get(`/api/runs/${id}`).then(setRun).finally(() => setLoading(false)); };
 
-  useEffect(() => {
+  const reload = () => {
+    setLoadError(null);
     loadRuns().then((r) => {
       const id = runId || r[0]?.id;
-      if (id) loadRun(id); else setRun(null);
-    }).catch(() => setRuns([]));
-  }, [runId]);
+      if (id) return loadRun(id); else setRun(null);
+    }).catch((e: any) => setLoadError(e?.message || "Request failed"));
+  };
+  useEffect(() => { reload(); }, [runId]);
 
   const work: Work[] = useMemo(() => {
     if (!run) return [];
@@ -97,7 +100,9 @@ export default function Workspace() {
           <Button variant={run ? "secondary" : "primary"} onClick={() => setUploadOpen(true)} icon={<Upload className="h-4 w-4" />}>Upload PR batch</Button>
         </>} />
 
-      {runs === null ? <Skeleton className="h-40" /> : runs.length === 0 ? (
+      {loadError ? (
+        <Card className="p-5"><div role="alert" className="text-[13px] text-bad">Couldn't load the buyer workspace ({loadError}). <button className="text-accent underline" onClick={reload}>Try again</button></div></Card>
+      ) : runs === null ? <Skeleton className="h-40" /> : runs.length === 0 ? (
         <Card><UploadPanel onDone={(id) => { refresh(); nav(`/workspace/${id}`); }} /></Card>
       ) : (
         <>
