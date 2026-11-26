@@ -185,7 +185,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <div className="text-[11px] text-muted">PR → PO, by policy</div>
             </div>
           </div>
-          <nav className="flex-1 space-y-0.5 px-3">
+          <nav aria-label="Main" className="flex-1 space-y-0.5 px-3">
             {NAV.map((n) => (
               <NavLink key={n.to} to={n.to} end={n.to === "/"} className="relative block">
                 {({ isActive }) => (
@@ -256,21 +256,31 @@ function StatusRow({ label, ok, text, warn }: { label: string; ok: boolean; text
 function MobileNav() {
   const [open, setOpen] = useState(false);
   const loc = useLocation();
+  const ref = useRef<HTMLDivElement>(null);
+  const btn = useRef<HTMLButtonElement>(null);
   useEffect(() => setOpen(false), [loc.pathname]);
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") { setOpen(false); btn.current?.focus(); } };
+    const onDown = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("mousedown", onDown);
+    return () => { document.removeEventListener("keydown", onKey); document.removeEventListener("mousedown", onDown); };
+  }, [open]);
   return (
-    <div className="lg:hidden">
-      <button onClick={() => setOpen(!open)} className="grid h-9 w-9 place-items-center rounded-lg border border-line bg-panel2" aria-label="Menu">
-        <UserRound className="hidden" /><span className="font-display text-sm">≡</span>
+    <div className="lg:hidden" ref={ref}>
+      <button ref={btn} onClick={() => setOpen(!open)} className="grid h-9 w-9 place-items-center rounded-lg border border-line bg-panel2" aria-label="Menu" aria-expanded={open} aria-controls="mobile-nav">
+        <UserRound className="hidden" /><span className="font-display text-sm" aria-hidden="true">≡</span>
       </button>
       <AnimatePresence>
         {open && (
-          <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute left-3 top-14 z-50 w-60 rounded-xl border border-line bg-panel p-1.5 shadow-2xl">
+          <motion.nav id="mobile-nav" aria-label="Main" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute left-3 top-14 z-50 w-60 rounded-xl border border-line bg-panel p-1.5 shadow-2xl">
             {NAV.map((n) => (
               <NavLink key={n.to} to={n.to} end={n.to === "/"} className={({ isActive }) => cx("flex items-center gap-2 rounded-lg px-3 py-2 text-sm", isActive ? "bg-panel2 text-ink" : "text-muted")}>
                 <n.icon className="h-4 w-4" />{n.label}
               </NavLink>
             ))}
-          </motion.div>
+          </motion.nav>
         )}
       </AnimatePresence>
     </div>
