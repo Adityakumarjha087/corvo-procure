@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Ban, CalendarDays, Download, Info, Search, Trophy } from "lucide-react";
+import { Ban, CalendarDays, Download, Info, Search, TriangleAlert, Trophy } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -19,14 +19,26 @@ export default function SuppliersPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [all, setAll] = useState<any>(null);
+  const [itemsFailed, setItemsFailed] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
 
-  useEffect(() => { api.get("/api/items").then((r) => { setItems(r); if (!item && r.length) setItem(r[0].item_code);}).catch((e) => toast.error(e.message)); }, []);
+  useEffect(() => {
+    setItemsFailed(false);
+    api.get("/api/items").then((r) => { setItems(r); if (!item && r.length) setItem(r[0].item_code);}).catch((e) => { setItemsFailed(true); toast.error(e.message); });
+  }, [attempt]);
   useEffect(() => {
     if (!item) return;
+    let stale = false;
     setLoading(true);
+    setLoadError(null);
     setParams({ item, as_of: asOf }, { replace: true });
-    api.get(`/api/preferred?item_code=${item}&as_of=${asOf}`).then(setData).catch((e) => toast.error(e.message)).finally(() => setLoading(false));
-  }, [item, asOf]);
+    api.get(`/api/preferred?item_code=${item}&as_of=${asOf}`)
+      .then((d) => { if (!stale) setData(d); })
+      .catch((e) => { if (!stale) { setData(null); setLoadError(e.message || "The server did not respond."); } })
+      .finally(() => { if (!stale) setLoading(false); });
+    return () => { stale = true; };
+  }, [item, asOf, attempt]);
   useEffect(() => { api.get(`/api/preferred/all?as_of=${asOf}`).then(setAll).catch(() => {}); }, [asOf]);
 
   const shownItems = useMemo(() => items.filter((i) => !q || `${i.item_code} ${i.description} ${i.category}`.toLowerCase().includes(q.toLowerCase())), [items, q]);
@@ -51,7 +63,7 @@ export default function SuppliersPage() {
             <div className="relative"><Search className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-faint" /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Find an item" aria-label="Find an item" className={cx(inputCls, "pl-8")} /></div>
           </div>
           <div className="flex-1 overflow-y-auto p-1.5">
-            {shownItems.length === 0 && <div className="px-3 py-8 text-center text-[12.5px] text-muted">{items.length === 0 ? "No items loaded yet." : <>No items match “{q}”.</>}</div>}
+            {shownItems.length === 0 && <div className="px-3 py-8 text-center text-[12.5px] text-muted">{itemsFailed ? "Could not load items. Check that the backend is running." : items.length === 0 ? "No items loaded yet." : <>No items match “{q}”.</>}</div>}
             {shownItems.map((it) => (
               <button key={it.item_code} onClick={() => setItem(it.item_code)} aria-current={item === it.item_code ? "true" : undefined} className={cx("relative flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left", item === it.item_code ? "bg-panel2" : "hover:bg-panel2/60")}>
                 {item === it.item_code && <motion.span layoutId="item-sel" className="absolute inset-y-2 left-0 w-[3px] rounded-full bg-accent" />}
@@ -63,7 +75,10 @@ export default function SuppliersPage() {
         </Card>
 
         <div className="min-w-0 space-y-4">
-          {loading && !data ? <Skeleton className="h-64" /> : data && (
+          {loadError ? (
+            <Card><Empty icon={<TriangleAlert className="h-5 w-5" />} title="Could not load the ranking" desc={loadError}
+              action={<Button size="sm" onClick={() => setAttempt((n) => n + 1)}>Retry</Button>} /></Card>
+          ) : loading && !data ? <Skeleton className="h-64" /> : data && (
             <>
               <Card className="p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
