@@ -170,6 +170,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
   }, []);
   const ctx = useMemo(() => ({ health, refresh, online }), [health, refresh, online]);
   const current = NAV.find((n) => (n.to === "/" ? loc.pathname === "/" : loc.pathname.startsWith(n.to)));
+  useEffect(() => {
+    document.title = current ? `${current.label} · Corvo Procure` : "Corvo Procure · Cantill";
+  }, [current]);
 
   return (
     <HealthCtx.Provider value={ctx}>
