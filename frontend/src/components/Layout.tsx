@@ -75,7 +75,7 @@ function UserMenu() {
               </button>
             ))}
             <form className="mt-1 flex gap-1 border-t border-line p-1.5" onSubmit={(e) => { e.preventDefault(); if (custom.trim()) { setUser({ name: custom.trim(), role: user.role }); setCustom(""); setOpen(false); } }}>
-              <input value={custom} onChange={(e) => setCustom(e.target.value)} placeholder="Your name" className="h-8 flex-1 rounded-md border border-line bg-panel2 px-2 text-[13px] focus:outline-none" />
+              <input value={custom} onChange={(e) => setCustom(e.target.value)} placeholder="Your name" aria-label="Your name" className="h-8 flex-1 rounded-md border border-line bg-panel2 px-2 text-[13px] focus:outline-none" />
               <button className="rounded-md bg-accent/15 px-2 text-[12px] font-medium text-accent">Use</button>
             </form>
           </motion.div>

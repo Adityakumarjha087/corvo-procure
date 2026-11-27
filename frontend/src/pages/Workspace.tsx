@@ -149,15 +149,15 @@ export default function Workspace() {
                 ]} />
                 <div className="relative ml-auto">
                   <Search className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-faint" />
-                  <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="PR no, item, supplier…" className={cx(inputCls, "w-64 pl-8")} />
+                  <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="PR no, item, supplier…" aria-label="Search work items" className={cx(inputCls, "w-64 pl-8")} />
                 </div>
               </div>
               {view !== "np" && view !== "lines" && (
                 <div className="mb-3 flex flex-wrap items-center gap-1.5">
                   <Filter className="h-3.5 w-3.5 text-faint" />
-                  <button onClick={() => setRouteF("")} className={cx("rounded-full border px-2.5 py-0.5 text-[12px]", !routeF ? "border-accent text-accent" : "border-line text-muted")}>All routes</button>
+                  <button onClick={() => setRouteF("")} aria-pressed={!routeF} className={cx("rounded-full border px-2.5 py-0.5 text-[12px]", !routeF ? "border-accent text-accent" : "border-line text-muted")}>All routes</button>
                   {routesPresent.map((r) => (
-                    <button key={r} onClick={() => setRouteF(r === routeF ? "" : r)} className={cx("rounded-full border px-2.5 py-0.5 text-[12px]", routeF === r ? "border-accent text-accent" : "border-line text-muted hover:text-ink")}>{routeInfo(r).label}</button>
+                    <button key={r} onClick={() => setRouteF(r === routeF ? "" : r)} aria-pressed={routeF === r} className={cx("rounded-full border px-2.5 py-0.5 text-[12px]", routeF === r ? "border-accent text-accent" : "border-line text-muted hover:text-ink")}>{routeInfo(r).label}</button>
                   ))}
                 </div>
               )}
@@ -167,7 +167,7 @@ export default function Workspace() {
                   <div className="hidden grid-cols-[110px_150px_minmax(0,1fr)_80px_130px_110px_28px] gap-3 border-b border-line bg-panel2/60 px-4 py-2 text-[11px] font-medium uppercase tracking-wider text-faint md:grid">
                     <span>Work item</span><span>Route</span><span>Items · supplier</span><span>Plant</span><span className="text-right">Value</span><span>Status</span><span />
                   </div>
-                  {filtered.length === 0 && <Empty icon={<BadgeCheck className="h-5 w-5" />} title={view === "review" ? "All caught up" : "Nothing here"} desc={view === "review" ? "Every decision in this run is approved." : "Try another filter."} />}
+                  {filtered.length === 0 && <Empty icon={<BadgeCheck className="h-5 w-5" />} title={view === "review" ? "All caught up" : "Nothing here"} desc={view === "review" && !q && !routeF ? "Every decision in this run is approved." : q || routeF ? "No work item matches the current search or route filter." : "Try another filter."} />}
                   <div className="divide-y divide-line">
                     {filtered.map((w, i) => (
                       <motion.button key={w.id} {...stagger(i)} onClick={() => setOpen(w)}
