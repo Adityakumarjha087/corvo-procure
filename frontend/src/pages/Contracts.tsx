@@ -149,12 +149,12 @@ function AddContract({ open, onClose, onSaved }: { open: boolean; onClose: () =>
             <div className="space-y-2">
               {c.lines.map((l: any, i: number) => (
                 <div key={i} className="grid grid-cols-[minmax(0,1fr)_140px_32px] gap-2">
-                  <select value={l.item_code} onChange={(e) => setLine(i, "item_code", e.target.value)} className={inputCls}>
+                  <select value={l.item_code} onChange={(e) => setLine(i, "item_code", e.target.value)} aria-label={`Line ${i + 1} item`} className={inputCls}>
                     <option value="">Item…</option>
                     {items.map((it) => <option key={it.item_code} value={it.item_code}>{it.item_code} · {it.description} ({it.uom})</option>)}
                   </select>
-                  <input value={l.rate} onChange={(e) => setLine(i, "rate", e.target.value)} className={inputCls} placeholder="Rate ₹" inputMode="decimal" />
-                  <button onClick={() => set("lines", c.lines.filter((_: any, j: number) => j !== i))} className="grid place-items-center rounded-lg text-muted hover:bg-bad/10 hover:text-bad" aria-label="Remove line"><Trash2 className="h-4 w-4" /></button>
+                  <input value={l.rate} onChange={(e) => setLine(i, "rate", e.target.value)} className={inputCls} placeholder="Rate ₹" aria-label={`Line ${i + 1} rate (₹)`} inputMode="decimal" />
+                  <button onClick={() => set("lines", c.lines.filter((_: any, j: number) => j !== i))} className="grid place-items-center rounded-lg text-muted hover:bg-bad/10 hover:text-bad" aria-label={`Remove line ${i + 1}`}><Trash2 className="h-4 w-4" /></button>
                 </div>
               ))}
             </div>
