@@ -122,7 +122,7 @@ function RuleCard({ rule, baseRule, index, total, open, schema, onToggle, onChan
     <div className={cx("rounded-xl border", changed === "new" ? "border-ok/50" : changed ? "border-warn/50" : "border-line", !enabled && "opacity-60")}>
       <div className="flex items-center gap-2 px-3 py-2">
         <span className="w-12 font-mono text-[12.5px] font-semibold text-accent">{rule.id}</span>
-        <button onClick={onToggle} className="min-w-0 flex-1 text-left">
+        <button onClick={onToggle} aria-expanded={open} aria-label={`${open ? "Collapse" : "Edit"} rule ${rule.id}: ${rule.name}`} className="min-w-0 flex-1 text-left">
           <div className="truncate text-[13.5px] font-medium">{rule.name}</div>
           <div className="truncate text-[11.5px] text-muted">when {summary}</div>
         </button>
@@ -132,7 +132,7 @@ function RuleCard({ rule, baseRule, index, total, open, schema, onToggle, onChan
         <IconBtn label="Move down" disabled={index === total - 1} onClick={() => onMove(1)}><ArrowDown className="h-3.5 w-3.5" /></IconBtn>
         <IconBtn label={enabled ? "Disable rule" : "Enable rule"} onClick={() => set((r) => (r.enabled = !enabled))}><Power className={cx("h-3.5 w-3.5", enabled ? "text-ok" : "text-faint")} /></IconBtn>
         <IconBtn label="Delete rule" onClick={onDelete}><Trash2 className="h-3.5 w-3.5 hover:text-bad" /></IconBtn>
-        <IconBtn label="Edit" onClick={onToggle}><ChevronDown className={cx("h-4 w-4 transition-transform", open && "rotate-180")} /></IconBtn>
+        <IconBtn label={`${open ? "Collapse" : "Edit"} rule ${rule.id}`} expanded={open} onClick={onToggle}><ChevronDown className={cx("h-4 w-4 transition-transform", open && "rotate-180")} /></IconBtn>
       </div>
       <AnimatePresence>
         {open && (
@@ -237,8 +237,8 @@ function supplierFromChoice(c: string, prev: any) {
   return { mode: "none" };
 }
 
-function IconBtn({ children, label, onClick, disabled }: { children: React.ReactNode; label: string; onClick: () => void; disabled?: boolean }) {
-  return <button aria-label={label} title={label} disabled={disabled} onClick={onClick} className="grid h-7 w-7 place-items-center rounded-md text-muted hover:bg-panel2 hover:text-ink disabled:opacity-30">{children}</button>;
+function IconBtn({ children, label, onClick, disabled, expanded }: { children: React.ReactNode; label: string; onClick: () => void; disabled?: boolean; expanded?: boolean }) {
+  return <button aria-label={label} aria-expanded={expanded} title={label} disabled={disabled} onClick={onClick} className="grid h-7 w-7 place-items-center rounded-md text-muted hover:bg-panel2 hover:text-ink disabled:opacity-30">{children}</button>;
 }
 
 export function useBuilderState() {
