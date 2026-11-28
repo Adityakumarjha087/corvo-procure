@@ -53,7 +53,7 @@ export default function SuppliersPage() {
       <PageHeader eyebrow="Buyer" title="Preferred suppliers"
         desc="Every item's ranked supplier list, rebuilt from PO history and contracts as of any date. Each score is broken down so you can see why a supplier ranks where it does."
         actions={<>
-          <label className="flex items-center gap-2 text-[13px] text-muted"><CalendarDays className="h-4 w-4" /><input type="date" value={asOf} onChange={(e) => setAsOf(e.target.value)} className={cx(inputCls, "w-40")} aria-label="As of date" /></label>
+          <label className="flex items-center gap-2 text-[13px] text-muted"><CalendarDays className="h-4 w-4" /><input type="date" value={asOf} onChange={(e) => { if (e.target.value) setAsOf(e.target.value); }} max="9999-12-31" required className={cx(inputCls, "w-40")} aria-label="As of date" /></label>
           <Button variant="primary" onClick={exportCsv} icon={<Download className="h-4 w-4" />}>Export top 3 (CSV)</Button>
         </>} />
 
