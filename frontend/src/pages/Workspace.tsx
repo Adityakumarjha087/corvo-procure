@@ -267,7 +267,7 @@ function LinesTable({ rows, q }: { rows: any[]; q: string }) {
     <Card className="overflow-x-auto">
       <table className="w-full min-w-[1100px] text-[12.5px]">
         <thead className="bg-panel2/60 text-left text-[11px] uppercase tracking-wider text-faint">
-          <tr>{["PR / line", "Item", "Group", "PO", "Route", "Supplier", "Unit price", "Group value", "Suggested", "Ver."].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr>
+          <tr>{["PR / line", "Item", "Group", "PO", "Route", "Supplier", "Unit price", "Group value", "Suggested", "Ver."].map((h) => <th key={h} scope="col" className="px-3 py-2 font-medium">{h}</th>)}</tr>
         </thead>
         <tbody className="divide-y divide-line">
           {f.map((r) => (
@@ -420,7 +420,7 @@ function RequirementBlock({ r, idx, total }: { r: any; idx: number; total: numbe
         <Section icon={<FileSpreadsheet className="h-4 w-4" />} title={`PR lines (${r.lines.length})`}>
           <div className="overflow-x-auto rounded-lg border border-line">
             <table className="w-full text-[12.5px]">
-              <thead className="bg-panel2/60 text-left text-[11px] text-faint"><tr>{["PR", "Created", "Requester", "As typed", "Qty", "Need by", "Urgency"].map((h) => <th key={h} className="px-2.5 py-1.5 font-medium">{h}</th>)}</tr></thead>
+              <thead className="bg-panel2/60 text-left text-[11px] text-faint"><tr>{["PR", "Created", "Requester", "As typed", "Qty", "Need by", "Urgency"].map((h) => <th key={h} scope="col" className="px-2.5 py-1.5 font-medium">{h}</th>)}</tr></thead>
               <tbody className="divide-y divide-line">
                 {r.lines.map((l: any) => (
                   <tr key={l.pr_no + l.pr_line}>

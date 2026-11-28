@@ -62,7 +62,7 @@ export default function ContractsPage() {
                       <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="overflow-hidden border-t border-line">
                         <div className="p-4">
                           <table className="w-full text-[13px]">
-                            <thead className="text-left text-[11px] text-faint"><tr><th className="pb-1.5 font-medium">Item</th><th className="pb-1.5 font-medium">Description</th><th className="pb-1.5 font-medium">UoM</th><th className="pb-1.5 text-right font-medium">Rate</th></tr></thead>
+                            <thead className="text-left text-[11px] text-faint"><tr><th scope="col" className="pb-1.5 font-medium">Item</th><th scope="col" className="pb-1.5 font-medium">Description</th><th scope="col" className="pb-1.5 font-medium">UoM</th><th scope="col" className="pb-1.5 text-right font-medium">Rate</th></tr></thead>
                             <tbody className="divide-y divide-line">{c.lines.map((l: any) => <tr key={l.item_code}><td className="py-1.5 font-mono">{l.item_code}</td><td className="py-1.5">{l.description}</td><td className="py-1.5 text-muted">{l.uom}</td><td className="py-1.5 text-right font-mono tabular">{inr(l.rate, 2)}</td></tr>)}</tbody>
                           </table>
                           <div className="mt-3 flex items-center justify-between text-[12px] text-muted">

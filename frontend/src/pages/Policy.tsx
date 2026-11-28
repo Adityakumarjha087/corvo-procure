@@ -274,7 +274,7 @@ function ImpactView({ impact }: { impact: any }) {
       {impact.changed.length > 0 && (
         <div className="max-h-72 overflow-auto rounded-lg border border-line">
           <table className="w-full text-[12px]">
-            <thead className="sticky top-0 bg-panel2 text-left text-[11px] text-faint"><tr><th className="px-2.5 py-1.5">PR line</th><th className="px-2.5 py-1.5">Item</th><th className="px-2.5 py-1.5">Change</th></tr></thead>
+            <thead className="sticky top-0 bg-panel2 text-left text-[11px] text-faint"><tr><th scope="col" className="px-2.5 py-1.5">PR line</th><th scope="col" className="px-2.5 py-1.5">Item</th><th scope="col" className="px-2.5 py-1.5">Change</th></tr></thead>
             <tbody className="divide-y divide-line">
               {impact.changed.map((c: any) => (
                 <tr key={c.pr_no + c.pr_line} title={c.reason_after}>
