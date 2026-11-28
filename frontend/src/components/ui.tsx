@@ -73,7 +73,7 @@ export function Spinner({ className }: { className?: string }) {
   return <Loader2 className={cx("h-4 w-4 animate-spin text-muted", className)} />;
 }
 export function Skeleton({ className }: { className?: string }) {
-  return <div className={cx("skeleton h-4", className)} />;
+  return <div role="status" aria-label="Loading" className={cx("skeleton h-4", className)} />;
 }
 
 export function AnimatedNumber({ value, format = (n: number) => Math.round(n).toLocaleString("en-IN") }: { value: number; format?: (n: number) => string }) {
